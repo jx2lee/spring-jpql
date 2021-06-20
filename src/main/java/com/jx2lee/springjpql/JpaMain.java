@@ -1,6 +1,6 @@
 package com.jx2lee.springjpql;
 
-import com.jx2lee.springjpql.domain.Member;
+import com.jx2lee.springjpql.domain.*;
 
 import javax.persistence.*;
 import java.util.List;
@@ -22,23 +22,26 @@ public class JpaMain {
             em.flush();
             em.clear();
 
-            // TypedQuery<Member> query1 = em.createQuery("select m from Member m", Member.class);
-            // TypedQuery<String> query2 = em.createQuery("select m.username from Member m", String.class);
-            // Query query3 = em.createQuery("select m.username, m.age from Member m", Member.class);
-
-            List<Member> resultList = em.createQuery(
-                    "select m from Member m where m.username = :username", Member.class)
-                    .setParameter("username", "jx2lee")
+            List<Team> resultList = em.createQuery(
+                    "select t from Member m join m.team t", Team.class)
+                    // "select m.team from Member m", Team.class) 대신 join 을 명시해주는 것이 운영에 좋다.
                     .getResultList();
-            // 메소드 체이닝 (method chaining 사용하지 않으면 다음과 같이 풀어서 사용) 적용하지 않는 경우
-            // TypedQuery<Member> query1 = em.createQuery(
-            //         "select m from Member m where m.username = :username", Member.class);
-            // query1.setParameter("username", "jx2lee");
-            // List<Member> resultList = query1.getResultList();
-            for (Member member1 : resultList) {
-                System.out.println("member1 = " + member1);
 
+            for (Team team1 : resultList) {
+                System.out.println("member1 = " + team1);
             }
+
+            em.createQuery("select o.address from Order o", Address.class).getResultList();
+            em.createQuery("select o.id, o.orderAmount from Order o").getResultList();
+            // new 연산자 이용방법
+            List<MemberDTO> resultList2 = em.createQuery(
+                    "select new com.jx2lee.springjpql.domain.MemberDTO(m.username, m.age) from Member m",
+                    MemberDTO.class).getResultList();
+            MemberDTO memberDTO = resultList2.get(0);
+            System.out.println("memberDTO.getUsername() = " + memberDTO.getUsername());
+            System.out.println("memberDTO.getAge = " + memberDTO.getAge());
+
+
             tx.commit();
 
             } catch (Exception e) {
