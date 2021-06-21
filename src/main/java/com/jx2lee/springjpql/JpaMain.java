@@ -19,7 +19,7 @@ public class JpaMain {
             em.persist(team);
 
             Member member = new Member();
-            member.setUsername("jx2lee");
+            member.setUsername("관리자");
             member.setAge(20);
             member.setType(MemberType.ADMIN);
 
@@ -30,17 +30,29 @@ public class JpaMain {
             em.flush();
             em.clear();
 
-            String query = "select m.username, 'HELLO', true, TRUE from Member m " +
-                            "where m.type = :userType";
-            List<Object[]> resultList = em.createQuery(query)
-                    .setParameter("userType", MemberType.ADMIN)
-                    .getResultList();
+            String query = "select " +
+                                    "case when m.age <= 10 then '학생요금' " +
+                                         "when m.age >= 60 then '경로요금' " +
+                                         "else '일반요금' " +
+                                    "end " +
+                           "from Member m";
+            String query1 = "select coalesce(m.username, '이름 없는 사람') from Member m";
+            String query2 = "select nullif(m.username, '관리자') from Member m";
 
-            for (Object[] objects : resultList) {
-                System.out.println("objects = " + objects[0]);
-                System.out.println("objects = " + objects[1]);
-                System.out.println("objects = " + objects[2]);
-                System.out.println("objects = " + objects[3]);
+            List<String> resultList = em.createQuery(query, String.class).getResultList();
+            List<String> resultList1 = em.createQuery(query1, String.class).getResultList();
+            List<String> resultList2 = em.createQuery(query2, String.class).getResultList();
+
+            for (String s : resultList) {
+                System.out.println("s = " + s);
+            }
+
+            for (String s : resultList1) {
+                System.out.println("s = " + s);
+            }
+
+            for (String s : resultList2) {
+                System.out.println("s = " + s);
             }
 
             tx.commit();
