@@ -19,8 +19,8 @@ public class JpaMain {
             em.persist(team);
 
             Member member = new Member();
-            member.setUsername("test");
-            member.setAge(10);
+            member.setUsername("teamA");
+            member.setAge(20);
 
             member.setTeam(team);
 
@@ -29,18 +29,15 @@ public class JpaMain {
             em.flush();
             em.clear();
 
-            String query1 = "select m from Member m, Team t where m.username = t.name";
-            em.createQuery(query1, Member.class).getResultList();
-
-            // on - 대상 필터링 (teamA 만 조회)
-            String query2 = "select m from Member m left join m.team t on t.name = 'teamA'";
-            em.createQuery(query2, Member.class).getResultList();
-
-            // on - 연관관계가 없는 엔티티 외부 조인
-            String query3 = "select m from Member m left join Team t on t.name = m.username";
-            em.createQuery(query3, Member.class).getResultList();
-
-
+            // 서브쿼리 예제
+            String query1 = "select m from Member m where m.age >= (select avg(m2.age) from Member m2)";
+            List<Member> resultList = em.createQuery(query1, Member.class).getResultList();
+            for (Member member1 : resultList) {
+                System.out.println("member1.getId() = " + member1.getId());
+                System.out.println("member1.getUsername() = " + member1.getUsername());
+                System.out.println("====================");
+            }
+            
             tx.commit();
 
             } catch (Exception e) {
