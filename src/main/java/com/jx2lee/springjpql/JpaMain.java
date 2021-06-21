@@ -19,8 +19,9 @@ public class JpaMain {
             em.persist(team);
 
             Member member = new Member();
-            member.setUsername("teamA");
+            member.setUsername("jx2lee");
             member.setAge(20);
+            member.setType(MemberType.ADMIN);
 
             member.setTeam(team);
 
@@ -29,15 +30,19 @@ public class JpaMain {
             em.flush();
             em.clear();
 
-            // 서브쿼리 예제
-            String query1 = "select m from Member m where m.age >= (select avg(m2.age) from Member m2)";
-            List<Member> resultList = em.createQuery(query1, Member.class).getResultList();
-            for (Member member1 : resultList) {
-                System.out.println("member1.getId() = " + member1.getId());
-                System.out.println("member1.getUsername() = " + member1.getUsername());
-                System.out.println("====================");
+            String query = "select m.username, 'HELLO', true, TRUE from Member m " +
+                            "where m.type = :userType";
+            List<Object[]> resultList = em.createQuery(query)
+                    .setParameter("userType", MemberType.ADMIN)
+                    .getResultList();
+
+            for (Object[] objects : resultList) {
+                System.out.println("objects = " + objects[0]);
+                System.out.println("objects = " + objects[1]);
+                System.out.println("objects = " + objects[2]);
+                System.out.println("objects = " + objects[3]);
             }
-            
+
             tx.commit();
 
             } catch (Exception e) {
