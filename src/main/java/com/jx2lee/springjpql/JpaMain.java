@@ -15,53 +15,61 @@ public class JpaMain {
 
         try {
             Team team = new Team();
-            team.setName("teamA");
+            team.setName("TeamA");
             em.persist(team);
 
             Member member = new Member();
-            member.setUsername("관리자");
+            member.setUsername("관리자A");
             member.setAge(20);
             member.setType(MemberType.ADMIN);
-
             member.setTeam(team);
 
+            Member member2 = new Member();
+            member2.setUsername("관리자B");
+            member2.setAge(30);
+            member2.setType(MemberType.ADMIN);
+
             em.persist(member);
+            em.persist(member2);
 
             em.flush();
             em.clear();
 
-            String query = "select " +
-                                    "case when m.age <= 10 then '학생요금' " +
-                                         "when m.age >= 60 then '경로요금' " +
-                                         "else '일반요금' " +
-                                    "end " +
-                           "from Member m";
-            String query1 = "select coalesce(m.username, '이름 없는 사람') from Member m";
-            String query2 = "select nullif(m.username, '관리자') from Member m";
+            String concatQuery = "select concat('a', 'b') From Member m";
+            String substringQuery = "select substring(m.username, 2, 3) From Member m";
+            String locateQuery = "select locate('de', 'abcdefgh') From Member m";
+            String sizeQuery = "select size(t.members) From Team t";
+            String groupConcatQuery = "select function('group_concat',m.username) From Member m";
 
-            List<String> resultList = em.createQuery(query, String.class).getResultList();
-            List<String> resultList1 = em.createQuery(query1, String.class).getResultList();
-            List<String> resultList2 = em.createQuery(query2, String.class).getResultList();
-
-            for (String s : resultList) {
-                System.out.println("s = " + s);
-            }
+            List<String> resultList1 = em.createQuery(concatQuery, String.class).getResultList();
+            List<String> resultList2 = em.createQuery(substringQuery, String.class).getResultList();
+            List<Integer> resultList3 = em.createQuery(locateQuery, Integer.class).getResultList();
+            List<Integer> resultList4 = em.createQuery(sizeQuery, Integer.class).getResultList();
+            List<String> resultList5 = em.createQuery(groupConcatQuery, String.class).getResultList();
 
             for (String s : resultList1) {
                 System.out.println("s = " + s);
             }
-
             for (String s : resultList2) {
+                System.out.println("s = " + s);
+            }
+            for (Integer integer : resultList3) {
+                System.out.println("integer = " + integer);
+            }
+            for (Integer integer : resultList4) {
+                System.out.println("integer = " + integer);
+            }
+            for (String s : resultList5) {
                 System.out.println("s = " + s);
             }
 
             tx.commit();
 
-            } catch (Exception e) {
-                tx.rollback();
-            } finally {
-                em.close();
-                emf.close();
-            }
+        } catch (Exception e) {
+            tx.rollback();
+        } finally {
+            em.close();
+            emf.close();
+        }
     }
 }
