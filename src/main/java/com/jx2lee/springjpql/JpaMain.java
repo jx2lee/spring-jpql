@@ -44,26 +44,28 @@ public class JpaMain {
             em.flush();
             em.clear();
 
-            // fetch join
-            String fetchQuery = "select m from Member m join fetch m.team";
-            List<Member> result = em.createQuery(fetchQuery, Member.class)
-                    .getResultList();
-
-            for (Member member : result) {
-                System.out.println("member.getUsername() = " + member.getUsername() + ", " + member.getTeam().getName());
-                // 회원1 -> 팀A(SQL)
-                // 회원2 -> 팀A(1차캐시)
-                // 회원3 -> 팀B(SQL)
-                // -> N + 1 문제: fetch 로 해결 가능
-            }
-
-            // fetch join - 컬렉션 패치조인 (일대다 관계)
-            // 뻥튀기 조심 -> distinct 로 우회가능
-            String fetchOneToManyQuery = "select distinct t from Team t join fetch t.members";
-            List<Team> teams = em.createQuery(fetchOneToManyQuery, Team.class)
+            // fetch join: alias 는 주지 않는것이 관례
+            // 가끔 유용할 때도 있다..
+            String notAliasQuery = "select distinct t from Team t join fetch t.members as m";
+            List<Team> teams = em.createQuery(notAliasQuery, Team.class)
                     .getResultList();
 
             for (Team team : teams) {
+                System.out.println("team.getName() = " + team.getName() + ", " + team);
+                for (Member member : team.getMembers()) {
+                    System.out.println("==> member = " + member.getUsername() + ", " + member);
+                }
+            }
+
+            em.clear();
+
+            String batchQuery = "select t from Team t";
+            List<Team> batchTeams = em.createQuery(batchQuery, Team.class)
+                    .setMaxResults(2)
+                    .setFirstResult(0)
+                    .getResultList();
+
+            for (Team team : batchTeams) {
                 System.out.println("team.getName() = " + team.getName() + ", " + team);
                 for (Member member : team.getMembers()) {
                     System.out.println("==> member = " + member.getUsername() + ", " + member);
