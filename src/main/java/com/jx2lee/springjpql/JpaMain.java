@@ -3,7 +3,6 @@ package com.jx2lee.springjpql;
 import com.jx2lee.springjpql.domain.*;
 
 import javax.persistence.*;
-import java.util.Collection;
 import java.util.List;
 
 public class JpaMain {
@@ -44,32 +43,21 @@ public class JpaMain {
             em.flush();
             em.clear();
 
-            // fetch join: alias 는 주지 않는것이 관례
-            // 가끔 유용할 때도 있다..
-            String notAliasQuery = "select distinct t from Team t join fetch t.members as m";
-            List<Team> teams = em.createQuery(notAliasQuery, Team.class)
+            // Entity 직접 사용
+            String entityQuery = "select m from Member m where m = :member";
+            Member findMember = em.createQuery(entityQuery, Member.class)
+                    .setParameter("member", member1)
+                    .getSingleResult();
+            System.out.println("findMember = " + findMember);
+
+            // 외래키 직접 사용
+            String foreignQuery = "select m from Member m where m.team = :team";
+            List<Member> members = em.createQuery(foreignQuery, Member.class)
+                    .setParameter("team", teamA)
                     .getResultList();
 
-            for (Team team : teams) {
-                System.out.println("team.getName() = " + team.getName() + ", " + team);
-                for (Member member : team.getMembers()) {
-                    System.out.println("==> member = " + member.getUsername() + ", " + member);
-                }
-            }
-
-            em.clear();
-
-            String batchQuery = "select t from Team t";
-            List<Team> batchTeams = em.createQuery(batchQuery, Team.class)
-                    .setMaxResults(2)
-                    .setFirstResult(0)
-                    .getResultList();
-
-            for (Team team : batchTeams) {
-                System.out.println("team.getName() = " + team.getName() + ", " + team);
-                for (Member member : team.getMembers()) {
-                    System.out.println("==> member = " + member.getUsername() + ", " + member);
-                }
+            for (Member member : members) {
+                System.out.println("member = " + member);
             }
 
             tx.commit();
