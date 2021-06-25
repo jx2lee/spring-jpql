@@ -43,20 +43,12 @@ public class JpaMain {
             em.flush();
             em.clear();
 
-            // Entity 직접 사용
-            String entityQuery = "select m from Member m where m = :member";
-            Member findMember = em.createQuery(entityQuery, Member.class)
-                    .setParameter("member", member1)
-                    .getSingleResult();
-            System.out.println("findMember = " + findMember);
-
-            // 외래키 직접 사용
-            String foreignQuery = "select m from Member m where m.team = :team";
-            List<Member> members = em.createQuery(foreignQuery, Member.class)
-                    .setParameter("team", teamA)
+            // Named query
+            List<Member> findMembers = em.createNamedQuery("Member.findUserName", Member.class)
+                    .setParameter("username", "회원1")
                     .getResultList();
 
-            for (Member member : members) {
+            for (Member member : findMembers) {
                 System.out.println("member = " + member);
             }
 
