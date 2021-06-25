@@ -3,7 +3,6 @@ package com.jx2lee.springjpql;
 import com.jx2lee.springjpql.domain.*;
 
 import javax.persistence.*;
-import java.util.List;
 
 public class JpaMain {
     public static void main(String[] args) {
@@ -40,17 +39,21 @@ public class JpaMain {
             member3.setType(MemberType.ADMIN);
             em.persist(member3);
 
-            em.flush();
+            // bulk
+            int resultCount = em.createQuery("update Member m set m.age = 20")
+                    .executeUpdate();
+            System.out.println("resultCount = " + resultCount);
+
+            // persistent 초기화 꼭 진행하자
             em.clear();
 
-            // Named query
-            List<Member> findMembers = em.createNamedQuery("Member.findUserName", Member.class)
-                    .setParameter("username", "회원1")
-                    .getResultList();
+            Member findMember1 = em.find(Member.class, member1.getId());
+            Member findMember2 = em.find(Member.class, member2.getId());
+            Member findMember3 = em.find(Member.class, member3.getId());
 
-            for (Member member : findMembers) {
-                System.out.println("member = " + member);
-            }
+            System.out.println("findMember1 = " + findMember1.getAge());
+            System.out.println("findMember2 = " + findMember2.getAge());
+            System.out.println("findMember3 = " + findMember3.getAge());
 
             tx.commit();
 
